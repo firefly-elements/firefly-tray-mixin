@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>firefly-tray-mixin test</title>
+
+    <script src="../../../@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="../../../wct-browser-legacy/browser.js"></script>
+
+    <script type="module" src="../firefly-tray-mixin.js"></script>
+  </head>
+  <body>
+
+    <test-fixture id="BasicTestFixture">
+      <template>
+        <firefly-tray-mixin></firefly-tray-mixin>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="ChangedPropertyTestFixture">
+      <template>
+        <firefly-tray-mixin prop1="new-prop1"></firefly-tray-mixin>
+      </template>
+    </test-fixture>
+
+    <script type="module">
+import '../firefly-tray-mixin.js';
+suite('firefly-tray-mixin', () => {
+
+  test('instantiating the element with default properties works', () => {
+    const element = fixture('BasicTestFixture');
+    assert.equal(element.prop1, 'firefly-tray-mixin');
+    const elementShadowRoot = element.shadowRoot;
+    const elementHeader = elementShadowRoot.querySelector('h2');
+    assert.equal(elementHeader.innerHTML, 'Hello firefly-tray-mixin!');
+  });
+
+  test('setting a property on the element works', () => {
+    // Create a test fixture
+    const element = fixture('ChangedPropertyTestFixture');
+    assert.equal(element.prop1, 'new-prop1');
+    const elementShadowRoot = element.shadowRoot;
+    const elementHeader = elementShadowRoot.querySelector('h2');
+    assert.equal(elementHeader.innerHTML, 'Hello new-prop1!');
+  });
+
+});
+</script>
+
+  </body>
+</html>
