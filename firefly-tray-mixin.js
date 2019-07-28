@@ -1,5 +1,5 @@
-import { matchesSelector } from './node_modules/@polymer/polymer/lib/legacy/polymer.dom.js';
-import { FlattenedNodesObserver } from './node_modules/@polymer/polymer/lib/utils/flattened-nodes-observer.js';
+import { matchesSelector } from '@polymer/polymer/lib/legacy/polymer.dom.js';
+import { FlattenedNodesObserver } from '@polymer/polymer/lib/utils/flattened-nodes-observer.js';
 
 /**
  * This mixin is used by trays of cards whose data models are driven by a firebase
@@ -7,7 +7,7 @@ import { FlattenedNodesObserver } from './node_modules/@polymer/polymer/lib/util
  * @polymerMixin
  * @mixinFunction
  */
-const AspFireTrayMixin = (superclass) => class extends superclass {
+export const FireflyTrayMixin = (superclass) => class extends superclass {
 
 
 		static get properties(){
