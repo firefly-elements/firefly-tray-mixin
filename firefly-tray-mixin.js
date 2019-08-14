@@ -65,7 +65,7 @@ export const FireflyTrayMixin = (superclass) => class extends superclass {
 		 */ 
 		 _requestCardDeleted(e){
         e.stopPropagation();
-        const dialog = this.shadowRoot.querySelector("asp-delete-dialog");
+        const dialog = this.shadowRoot.querySelector("firefly-delete-dialog");
         dialog.model = e.detail.model;
         dialog.open();
         
