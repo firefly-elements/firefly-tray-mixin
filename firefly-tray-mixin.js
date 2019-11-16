@@ -15,7 +15,8 @@ export const FireflyTrayMixin = superclass =>
         model: {
           type: Array,
           value: [],
-          notify: true
+          notify: true,
+          observer: "onModelChange"
         },
 
         /** The text of the dialog header. */
@@ -33,6 +34,11 @@ export const FireflyTrayMixin = superclass =>
         data: {
           type: Object,
           observer: "onDataChange"
+        },
+
+        event: {
+          type: String,
+          value: "event"
         }
       };
     }
@@ -47,6 +53,22 @@ export const FireflyTrayMixin = superclass =>
       }
     }
 
+    ready() {
+      super.ready();
+
+      const pathname = window.location.pathname;
+      const pattern = /\/\w+-?\w+/;
+      const match = pathname.match(pattern);
+
+      if (match[0] === "/communities") {
+        this.event = "community";
+      } else if (match[0] === "/community-events") {
+        this.event = "event";
+      } else {
+        this.event = "indication";
+      }
+    }
+
     /** @Override */
     _handleCardAdded(e) {
       let query = this.shadowRoot.querySelector("#query");
@@ -54,9 +76,9 @@ export const FireflyTrayMixin = superclass =>
 
       try {
         query.ref.doc().set(e.detail.model, { merge: true });
-        msg = "Added new indication";
+        msg = `Added new ${this.event}`;
       } catch (e) {
-        msg = "An error occurred while adding an indication";
+        msg = `An error occurred while adding an ${this.event}`;
         console.log(e);
       }
       this.dispatchEvent(
@@ -76,13 +98,15 @@ export const FireflyTrayMixin = superclass =>
     _handleCardDeleted(e) {
       let query = this.shadowRoot.querySelector("#query");
       let msg = "";
+
       try {
         query.ref.doc(e.detail.model.$key).delete();
-        msg = "Deleted indication: " + e.detail.model.name;
+        msg = `Deleted ${this.event}: ${e.detail.model.name}`;
       } catch (e) {
         msg = "An error occurred while adding an indication";
         console.log(e);
       }
+
       this.dispatchEvent(
         new CustomEvent("show-msg", {
           bubbles: true,
@@ -120,6 +144,10 @@ export const FireflyTrayMixin = superclass =>
     _requestCardDeleted(e) {
       e.stopPropagation();
       const dialog = this.shadowRoot.querySelector("firefly-delete-dialog");
+      let menu = this.shadowRoot.querySelector("asp-community-sheet");
+      if (menu) {
+        menu.close();
+      }
       dialog.model = e.detail.model;
       dialog.open();
     }
