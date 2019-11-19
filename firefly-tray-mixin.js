@@ -1,6 +1,3 @@
-import { matchesSelector } from "@polymer/polymer/lib/legacy/polymer.dom.js";
-import { FlattenedNodesObserver } from "@polymer/polymer/lib/utils/flattened-nodes-observer.js";
-
 /**
  * This mixin is used by trays of cards whose data models are driven by a firebase
  * database.
@@ -16,7 +13,7 @@ export const FireflyTrayMixin = superclass =>
           type: Array,
           value: [],
           notify: true,
-          observer: 'onModelChange'
+          observer: "onModelChange"
         },
 
         /** The text of the dialog header. */
@@ -38,61 +35,64 @@ export const FireflyTrayMixin = superclass =>
 
         event: {
           type: String,
-          value: 'event'
-         
+          value: "event"
         }
       };
     }
 
-    /** @Overide */
+    /**
+     * This methods gets called by 'card-selected' event listener
+     * @param {Object} e - event
+     */
     _handleCardSelected(e) {
       const pathname = window.location.pathname;
-      const pattern = /\/\w+-?\w+/
+      const pattern = /\/\w+-?\w+/;
       const type = pathname.match(pattern)[0];
-      
+
       if (type === "/settings-indications") {
         this._handleNav(e, "/indications/" + e.detail.model.$key);
-      } else if(type === "/advice"){
-         this._handleNav(e, "/advice-details/" + e.detail.model.$key);
+      } else if (type === "/advice") {
+        this._handleNav(e, "/advice-details/" + e.detail.model.$key);
       } else {
         this._handleNav(e, "/therapeutics/" + e.detail.model.$key);
       }
     }
 
-
-    ready(){
+    /**
+     * Use for one-time configuration of your component after local DOM is initialized.
+     */
+    ready() {
       super.ready();
 
       const pathname = window.location.pathname;
-      const pattern = /\/\w+-?\w+/
-      const match = pathname.match(pattern)
+      const pattern = /\/\w+-?\w+/;
+      const page = pathname.match(pattern)[0];
 
-      if(match[0] === '/communities'){
-        this.event = 'community'
-      } else if (match[0] === '/community-events'){
-        this.event = 'event'
-      } else if (match[0] === '/advice'){
-        this.event = 'advice'
+      if (page === "/communities") {
+        this.event = "community";
+      } else if (page === "/community-events") {
+        this.event = "event";
+      } else if (page === "/advice") {
+        this.event = "advice";
       } else {
-        this.event = 'indication'
+        this.event = "indication";
       }
     }
 
-
- 
-
-    /** @Override */
+    /**
+     * This methods gets called by 'card-added' event listener
+     * @param {Object} e - event
+     */
     _handleCardAdded(e) {
-
       let query = this.shadowRoot.querySelector("#query");
       let msg = "";
-    
+
       try {
         query.ref.doc().set(e.detail.model, { merge: true });
         msg = `Added new ${this.event}`;
-      } catch (e) {
+      } catch (error) {
         msg = `An error occurred while adding an ${this.event}`;
-        console.log(e);
+        console.log(error);
       }
       this.dispatchEvent(
         new CustomEvent("show-msg", {
@@ -106,21 +106,51 @@ export const FireflyTrayMixin = superclass =>
     }
 
     /**
-     * @Override
+     * This methods gets called by 'card-deleted' event listener
+     * @param {Object} e - event
      */
     _handleCardDeleted(e) {
- 
       let query = this.shadowRoot.querySelector("#query");
       let msg = "";
-     
+
       try {
         query.ref.doc(e.detail.model.$key).delete();
         msg = `Deleted ${this.event}: ${e.detail.model.name}`;
-      } catch (e) {
+      } catch (error) {
         msg = "An error occurred while adding an indication";
-        console.log(e);
+        console.log(error);
       }
-          
+
+      this.dispatchEvent(
+        new CustomEvent("show-msg", {
+          bubbles: true,
+          composed: true,
+          detail: {
+            msg: msg
+          }
+        })
+      );
+    }
+
+    /**
+     * This methods gets called by 'card-cloned' event listener
+     * @param {Object} e - event
+     */
+    _handleCardCloned(e) {
+      let clone = e.detail.model;
+      delete clone.$key;
+
+      let msg = "";
+      try {
+        let query = this.$.query;
+        clone.name = clone.name + " Copy";
+        query.ref.add(clone);
+        msg = "Event cloned";
+      } catch (ex) {
+        console.error(ex);
+        msg = "An error occurred while cloning the event.";
+      }
+
       this.dispatchEvent(
         new CustomEvent("show-msg", {
           bubbles: true,
@@ -159,24 +189,11 @@ export const FireflyTrayMixin = superclass =>
       e.stopPropagation();
       const dialog = this.shadowRoot.querySelector("firefly-delete-dialog");
       let menu = this.shadowRoot.querySelector("asp-community-sheet");
-      if(menu){
-        menu.close()
+      if (menu) {
+        menu.close();
       }
-        dialog.model = e.detail.model;
-        dialog.open();
-      
-    }
-
-    _openAddDialog(e) {
-      let nodes = FlattenedNodesObserver.getFlattenedNodes(this);
-      let assignedNodes = nodes.filter(
-        n =>
-          n.nodeType === Node.ELEMENT_NODE &&
-          matchesSelector(n, ".detail-dialog")
-      );
-      let dialog = assignedNodes[0];
-      console.log(dialog);
-      dialog.newOpen();
+      dialog.model = e.detail.model;
+      dialog.open();
     }
 
     connectedCallback() {
@@ -186,13 +203,9 @@ export const FireflyTrayMixin = superclass =>
       this.addEventListener("request-card-deleted", e => {
         this._requestCardDeleted(e);
       });
-      this.addEventListener("card-deleted", e =>  {
-       
-        this._handleCardDeleted(e)
-      }
-    
-       
-      );
+      this.addEventListener("card-deleted", e => {
+        this._handleCardDeleted(e);
+      });
       this.addEventListener("card-cloned", e => this._handleCardCloned(e));
       this.addEventListener("card-launched", e => this._handleCardLaunched(e));
     }
