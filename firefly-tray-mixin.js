@@ -49,8 +49,8 @@ export const FireflyTrayMixin = superclass =>
       const pattern = /\/\w+-?\w+/;
       const type = pathname.match(pattern)[0];
 
-      if (type === "/settings-indications") {
-        this._handleNav(e, "/indications/" + e.detail.model.$key);
+      if (type === "/indications") {
+        this._handleNav(e, "/indication/" + e.detail.model.$key);
       } else if (type === "/advice") {
         this._handleNav(e, "/advice-details/" + e.detail.model.$key);
       } else {
@@ -84,9 +84,9 @@ export const FireflyTrayMixin = superclass =>
      * @param {Object} e - event
      */
     _handleCardAdded(e) {
+      
       let query = this.shadowRoot.querySelector("#query");
       let msg = "";
-
       try {
         query.ref.doc().set(e.detail.model, { merge: true });
         msg = `Added new ${this.event}`;
@@ -187,6 +187,8 @@ export const FireflyTrayMixin = superclass =>
 
     _requestCardDeleted(e) {
       e.stopPropagation();
+    
+      
       const dialog = this.shadowRoot.querySelector("firefly-delete-dialog");
       let menu = this.shadowRoot.querySelector("asp-community-sheet");
       if (menu) {
@@ -199,7 +201,9 @@ export const FireflyTrayMixin = superclass =>
     connectedCallback() {
       super.connectedCallback();
       this.addEventListener("card-selected", e => this._handleCardSelected(e));
-      this.addEventListener("card-added", e => this._handleCardAdded(e));
+      this.addEventListener("card-added", e => {
+       
+        this._handleCardAdded(e)});
       this.addEventListener("request-card-deleted", e => {
         this._requestCardDeleted(e);
       });
