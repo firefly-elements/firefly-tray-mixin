@@ -84,7 +84,6 @@ export const FireflyTrayMixin = superclass =>
      * @param {Object} e - event
      */
     _handleCardAdded(e) {
-      
       let query = this.shadowRoot.querySelector("#query");
       let msg = "";
       try {
@@ -115,7 +114,8 @@ export const FireflyTrayMixin = superclass =>
 
       try {
         query.ref.doc(e.detail.model.$key).delete();
-        msg = `Deleted ${this.event}: ${e.detail.model.name}`;
+        msg = `Deleted ${this.event}: ${e.detail.model.name ||
+          e.detail.model.title}`;
       } catch (error) {
         msg = "An error occurred while adding an indication";
         console.log(error);
@@ -187,8 +187,7 @@ export const FireflyTrayMixin = superclass =>
 
     _requestCardDeleted(e) {
       e.stopPropagation();
-    
-      
+
       const dialog = this.shadowRoot.querySelector("firefly-delete-dialog");
       let menu = this.shadowRoot.querySelector("asp-community-sheet");
       if (menu) {
@@ -202,8 +201,8 @@ export const FireflyTrayMixin = superclass =>
       super.connectedCallback();
       this.addEventListener("card-selected", e => this._handleCardSelected(e));
       this.addEventListener("card-added", e => {
-       
-        this._handleCardAdded(e)});
+        this._handleCardAdded(e);
+      });
       this.addEventListener("request-card-deleted", e => {
         this._requestCardDeleted(e);
       });
