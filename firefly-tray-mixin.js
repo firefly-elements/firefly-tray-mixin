@@ -105,6 +105,16 @@ export const FireflyTrayMixin = superclass =>
     }
 
     /**
+     * This method displays a dialog to allow the user to RSVP for an event.
+     * @param {Object} e the event object.
+     */
+    _requestCardStarred(e) {
+      let dialog = this.shadowRoot.querySelector("asp-rsvp-dialog");
+      dialog.model = e.detail.model;
+      dialog.open();
+    }
+
+    /**
      * This methods gets called by 'card-deleted' event listener
      * @param {Object} e - event
      */
@@ -187,8 +197,18 @@ export const FireflyTrayMixin = superclass =>
 
     _requestCardDeleted(e) {
       e.stopPropagation();
+      let dialog;
+      const fireflyCardTray = this.shadowRoot.querySelector(
+        "firefly-card-tray"
+      );
+      if (fireflyCardTray) {
+        dialog = fireflyCardTray.shadowRoot.querySelector(
+          "firefly-delete-dialog"
+        );
+      } else {
+        dialog = this.shadowRoot.querySelector("firefly-delete-dialog");
+      }
 
-      const dialog = this.shadowRoot.querySelector("firefly-delete-dialog");
       let menu = this.shadowRoot.querySelector("asp-community-sheet");
       if (menu) {
         menu.close();
