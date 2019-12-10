@@ -64,14 +64,22 @@ export const FireflyTrayMixin = superclass =>
     ready() {
       super.ready();
 
+      this.getNotificationEventName();
+    }
+
+    /**
+     * Method which dynamically sets name for notifications
+     */
+    getNotificationEventName() {
       const pathname = window.location.pathname;
       const pattern = /\/\w+-?\w+/;
       const page = pathname.match(pattern)[0];
-
       if (page === "/communities") {
         this.event = "community";
       } else if (page === "/community-events") {
         this.event = "event";
+      } else if (page === "/project-therapeutics") {
+        this.event = "project";
       } else if (page === "/advice") {
         this.event = "advice";
       } else {
@@ -83,11 +91,12 @@ export const FireflyTrayMixin = superclass =>
      * This methods gets called by 'card-added' event listener
      * @param {Object} e - event
      */
-    _handleCardAdded(e) {
+    async _handleCardAdded(e) {
       let query = this.shadowRoot.querySelector("#query");
       let msg = "";
+
       try {
-        query.ref.doc().set(e.detail.model, { merge: true });
+        await query.ref.doc().set(e.detail.model, { merge: true });
         msg = `Added new ${this.event}`;
       } catch (error) {
         msg = `An error occurred while adding an ${this.event}`;
