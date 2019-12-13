@@ -12,7 +12,8 @@ export const FireflyTrayMixin = superclass =>
         model: {
           type: Array,
           value: [],
-          notify: true
+          notify: true,
+          observer: "onModelChange"
         },
 
         /** The text of the dialog header. */
@@ -47,13 +48,26 @@ export const FireflyTrayMixin = superclass =>
       const pathname = window.location.pathname;
       const pattern = /\/\w+-?\w+/;
       const type = pathname.match(pattern)[0];
-
-      if (type === "/indications") {
-        this._handleNav(e, "/indication/" + e.detail.model.$key);
-      } else if (type === "/advice") {
-        this._handleNav(e, "/advice-details/" + e.detail.model.$key);
-      } else {
-        this._handleNav(e, "/therapeutics/" + e.detail.model.$key);
+      debugger;
+      switch (type) {
+        case "/indications":
+          this._handleNav(e, "/indication/" + e.detail.model.$key);
+          break;
+        case "/advice":
+          this._handleNav(e, "/advice-details/" + e.detail.model.$key);
+          break;
+        case "/therapeutics":
+          this._handleNav(e, "/therapeutics/" + e.detail.model.$key);
+          break;
+        case "/project-therapeutics":
+          this._handleNav(
+            e,
+            "/therapeutics/" +
+              e.detail.model.$key +
+              "/" +
+              e.detail.model.project
+          );
+          break;
       }
     }
 
@@ -63,31 +77,18 @@ export const FireflyTrayMixin = superclass =>
     ready() {
       super.ready();
 
-      this.getNotificationTitleByUrl();
-    }
+      const pathname = window.location.pathname;
+      const pattern = /\/\w+-?\w+/;
+      const page = pathname.match(pattern)[0];
 
-    /**
-     * Method which changes notification title based on page URL
-     */
-    getNotificationTitleByUrl() {
-      // Check if url is matching pattern
-      const getMatch = pattern => {
-        return window.location.pathname.match(pattern);
-      };
-      if (getMatch("communities") || getMatch("community")) {
+      if (page === "/communities") {
         this.event = "community";
-      }
-      if (getMatch("events?")) {
+      } else if (page === "/community-events") {
         this.event = "event";
-      }
-      if (getMatch("advices?")) {
+      } else if (page === "/advice") {
         this.event = "advice";
-      }
-      if (getMatch("indications?")) {
+      } else {
         this.event = "indication";
-      }
-      if (getMatch("investors?")) {
-        this.event = "investor";
       }
     }
 
@@ -96,7 +97,6 @@ export const FireflyTrayMixin = superclass =>
      * @param {Object} e - event
      */
     _handleCardAdded(e) {
-      debugger;
       let query = this.shadowRoot.querySelector("#query");
       let msg = "";
       try {
@@ -134,6 +134,7 @@ export const FireflyTrayMixin = superclass =>
     _handleCardDeleted(e) {
       let query = this.shadowRoot.querySelector("#query");
       let msg = "";
+
       try {
         query.ref.doc(e.detail.model.$key).delete();
         msg = `Deleted ${this.event}: ${e.detail.model.name ||
