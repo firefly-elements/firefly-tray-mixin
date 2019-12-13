@@ -12,8 +12,7 @@ export const FireflyTrayMixin = superclass =>
         model: {
           type: Array,
           value: [],
-          notify: true,
-          observer: "onModelChange"
+          notify: true
         },
 
         /** The text of the dialog header. */
@@ -64,26 +63,31 @@ export const FireflyTrayMixin = superclass =>
     ready() {
       super.ready();
 
-      this.getNotificationEventName();
+      this.getNotificationTitleByUrl();
     }
 
     /**
-     * Method which dynamically sets name for notifications
+     * Method which changes notification title based on page URL
      */
-    getNotificationEventName() {
-      const pathname = window.location.pathname;
-      const pattern = /\/\w+-?\w+/;
-      const page = pathname.match(pattern)[0];
-      if (page === "/communities") {
+    getNotificationTitleByUrl() {
+      // Check if url is matching pattern
+      const getMatch = pattern => {
+        return window.location.pathname.match(pattern);
+      };
+      if (getMatch("communities") || getMatch("community")) {
         this.event = "community";
-      } else if (page === "/community-events") {
+      }
+      if (getMatch("events?")) {
         this.event = "event";
-      } else if (page === "/project-therapeutics") {
-        this.event = "project";
-      } else if (page === "/advice") {
+      }
+      if (getMatch("advices?")) {
         this.event = "advice";
-      } else {
+      }
+      if (getMatch("indications?")) {
         this.event = "indication";
+      }
+      if (getMatch("investors?")) {
+        this.event = "investor";
       }
     }
 
@@ -91,12 +95,12 @@ export const FireflyTrayMixin = superclass =>
      * This methods gets called by 'card-added' event listener
      * @param {Object} e - event
      */
-    async _handleCardAdded(e) {
+    _handleCardAdded(e) {
+      debugger;
       let query = this.shadowRoot.querySelector("#query");
       let msg = "";
-
       try {
-        await query.ref.doc().set(e.detail.model, { merge: true });
+        query.ref.doc().set(e.detail.model, { merge: true });
         msg = `Added new ${this.event}`;
       } catch (error) {
         msg = `An error occurred while adding an ${this.event}`;
@@ -130,7 +134,6 @@ export const FireflyTrayMixin = superclass =>
     _handleCardDeleted(e) {
       let query = this.shadowRoot.querySelector("#query");
       let msg = "";
-
       try {
         query.ref.doc(e.detail.model.$key).delete();
         msg = `Deleted ${this.event}: ${e.detail.model.name ||
